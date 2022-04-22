@@ -179,6 +179,15 @@ type variableProperties struct {
 			Srcs         []string `android:"arch_variant"`
 			Exclude_srcs []string `android:"arch_variant"`
 		} `android:"arch_variant"`
+
+		CameraSupportHDMI struct {
+			Cflags          []string
+			Cppflags        []string
+			Init_rc         []string
+			Required        []string
+			Host_required   []string
+			Target_required []string
+		}
 	} `android:"arch_variant"`
 }
 
@@ -286,6 +295,7 @@ type productVariables struct {
 	Uml                          *bool    `json:",omitempty"`
 	Arc                          *bool    `json:",omitempty"`
 	MinimizeJavaDebugInfo        *bool    `json:",omitempty"`
+	CameraSupportHDMI            *bool    `json:",omitempty"`
 
 	Check_elf_files *bool `json:",omitempty"`
 
