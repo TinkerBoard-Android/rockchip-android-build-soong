@@ -246,6 +246,10 @@ type bootImageConfig struct {
 	// Subdirectory where the image files on device are installed.
 	installDirOnDevice string
 
+	// Install path of the boot image profile if it needs to be installed in the APEX, or empty if not
+	// needed.
+	profileInstallPathInApex string
+
 	// A list of (location, jar) pairs for the Java modules in this image.
 	modules android.ConfiguredJarList
 
@@ -296,10 +300,13 @@ type bootImageVariant struct {
 	// This is only set for a variant of an image that extends another image.
 	primaryImagesDeps android.Paths
 
-	// Rules which should be used in make to install the outputs.
+	// Rules which should be used in make to install the outputs on host.
 	installs           android.RuleBuilderInstalls
 	vdexInstalls       android.RuleBuilderInstalls
 	unstrippedInstalls android.RuleBuilderInstalls
+
+	// Rules which should be used in make to install the outputs on device.
+	deviceInstalls android.RuleBuilderInstalls
 }
 
 // Get target-specific boot image variant for the given boot image config and target.
@@ -431,6 +438,8 @@ type dexpreoptBootJars struct {
 	// Build path to a config file that Soong writes for Make (to be used in makefiles that install
 	// the default boot image).
 	dexpreoptConfigForMake android.WritablePath
+
+	artBootImageDeviceInstallMakeModules []string
 }
 
 // Provide paths to boot images for use by modules that depend upon them.
@@ -462,6 +471,14 @@ func (d *dexpreoptBootJars) GenerateSingletonBuildActions(ctx android.SingletonC
 	d.defaultBootImage = defaultImageConfig
 	artBootImageConfig := artBootImageConfig(ctx)
 	d.otherImages = []*bootImageConfig{artBootImageConfig}
+
+	ctx.VisitAllModules(func(module android.Module) {
+		if bcpfModule, ok := module.(*PrebuiltBootclasspathFragmentModule); ok {
+			if proptools.String(bcpfModule.properties.Image_name) == "art" {
+				d.artBootImageDeviceInstallMakeModules = bcpfModule.BootImageDeviceInstallMakeModules()
+			}
+		}
+	})
 }
 
 // shouldBuildBootImages determines whether boot images should be built.
@@ -680,6 +697,7 @@ func buildBootImageVariant(ctx android.ModuleContext, image *bootImageVariant, p
 
 	var vdexInstalls android.RuleBuilderInstalls
 	var unstrippedInstalls android.RuleBuilderInstalls
+	var deviceInstalls android.RuleBuilderInstalls
 
 	for _, artOrOat := range image.moduleFiles(ctx, outputDir, ".art", ".oat") {
 		cmd.ImplicitOutput(artOrOat)
@@ -705,12 +723,21 @@ func buildBootImageVariant(ctx android.ModuleContext, image *bootImageVariant, p
 			android.RuleBuilderInstall{unstrippedOat, filepath.Join(installDir, unstrippedOat.Base())})
 	}
 
+	if !strings.HasPrefix(image.installDirOnDevice, "apex/") && !ctx.Config().UnbundledBuild() {
+		installDirOnDevice := filepath.Join("/", image.installDirOnDevice, arch.String())
+		for _, file := range image.moduleFiles(ctx, outputDir, ".art", ".oat", ".vdex") {
+			deviceInstalls = append(deviceInstalls,
+				android.RuleBuilderInstall{file, filepath.Join(installDirOnDevice, file.Base())})
+		}
+	}
+
 	rule.Build(image.name+"JarsDexpreopt_"+image.target.String(), "dexpreopt "+image.name+" jars "+arch.String())
 
 	// save output and installed files for makevars
 	image.installs = rule.Installs()
 	image.vdexInstalls = vdexInstalls
 	image.unstrippedInstalls = unstrippedInstalls
+	image.deviceInstalls = deviceInstalls
 }
 
 const failureMessage = `ERROR: Dex2oat failed to compile a boot image.
@@ -925,4 +952,6 @@ func (d *dexpreoptBootJars) MakeVars(ctx android.MakeVarsContext) {
 		}
 		ctx.Strict("DEXPREOPT_IMAGE_NAMES", strings.Join(imageNames, " "))
 	}
+
+	ctx.Strict("ART_BOOT_IMAGE_DEVICE_INSTALL_MAKE_MODULES", strings.Join(d.artBootImageDeviceInstallMakeModules, " "))
 }

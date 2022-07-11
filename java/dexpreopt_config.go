@@ -59,15 +59,19 @@ func genBootImageConfigs(ctx android.PathContext) map[string]*bootImageConfig {
 		artDirOnHost := "apex/art_boot_images/javalib"
 		artDirOnDevice := "apex/com.android.art/javalib"
 		frameworkSubdir := "system/framework"
+		if !ctx.Config().VendorConfig("art_module").Bool("source_build") {
+			artDirOnDevice = frameworkSubdir
+		}
 
 		// ART config for the primary boot image in the ART apex.
 		// It includes the Core Libraries.
 		artCfg := bootImageConfig{
-			name:               artBootImageName,
-			stem:               "boot",
-			installDirOnHost:   artDirOnHost,
-			installDirOnDevice: artDirOnDevice,
-			modules:            artModules,
+			name:                     artBootImageName,
+			stem:                     "boot",
+			installDirOnHost:         artDirOnHost,
+			installDirOnDevice:       artDirOnDevice,
+			profileInstallPathInApex: "etc/boot-image.prof",
+			modules:                  artModules,
 		}
 
 		// Framework config for the boot image extension.

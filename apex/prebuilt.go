@@ -203,6 +203,9 @@ func (p *prebuiltCommon) AndroidMkEntries() []android.AndroidMkEntries {
 					entries.SetString("LOCAL_MODULE_STEM", p.installFilename)
 					entries.SetBoolIfTrue("LOCAL_UNINSTALLABLE_MODULE", !p.installable())
 					entries.AddStrings("LOCAL_OVERRIDES_MODULES", p.prebuiltCommonProperties.Overrides...)
+					if proptools.String(p.prebuiltCommonProperties.Apex_name) == "com.android.art" {
+						entries.AddStrings("LOCAL_REQUIRED_MODULES", "$(ART_BOOT_IMAGE_DEVICE_INSTALL_MAKE_MODULES)")
+					}
 					postInstallCommands := append([]string{}, p.postInstallCommands...)
 					postInstallCommands = append(postInstallCommands, p.compatSymlinks...)
 					if len(postInstallCommands) > 0 {

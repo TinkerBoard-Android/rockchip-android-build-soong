@@ -341,7 +341,6 @@ func dexpreoptCommand(ctx android.PathContext, globalSoong *GlobalSoongConfig, g
 		FlagWithArg("--instruction-set-features=", global.InstructionSetFeatures[arch]).
 		Flag("--no-generate-debug-info").
 		Flag("--generate-build-id").
-		Flag("--abort-on-hard-verifier-error").
 		Flag("--force-determinism").
 		FlagWithArg("--no-inline-from=", "core-oj.jar")
 
