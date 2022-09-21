@@ -183,6 +183,24 @@ type variableProperties struct {
 			Host_required   []string
 			Target_required []string
 		}
+		CameraWithGralloc4 struct {
+			Cflags          []string
+			Cppflags        []string
+			Srcs            []string
+			Init_rc         []string
+			Required        []string
+			Host_required   []string
+			Target_required []string
+		}
+		CameraWithOutGralloc4 struct {
+			Cflags          []string
+			Cppflags        []string
+			Srcs            []string
+			Init_rc         []string
+			Required        []string
+			Host_required   []string
+			Target_required []string
+		}
 	} `android:"arch_variant"`
 }
 
@@ -274,6 +292,8 @@ type productVariables struct {
 	UseRBED8                     *bool `json:",omitempty"`
 	Debuggable                   *bool `json:",omitempty"`
 	Eng                          *bool `json:",omitempty"`
+	CameraWithGralloc4           *bool `json:",omitempty"`
+	CameraWithOutGralloc4        *bool `json:",omitempty"`
 	CameraSupportHDMI            *bool `json:",omitempty"`
 	CameraSupportHDMISubVideo    *bool `json:",omitempty"`
 	CameraSupportOSD             *bool `json:",omitempty"`
