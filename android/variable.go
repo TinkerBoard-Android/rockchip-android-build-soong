@@ -180,6 +180,14 @@ type variableProperties struct {
 			Exclude_srcs []string `android:"arch_variant"`
 		} `android:"arch_variant"`
 
+		CameraSupportAutomotive struct {
+			Cflags          []string
+			Cppflags        []string
+			Init_rc         []string
+			Required        []string
+			Host_required   []string
+			Target_required []string
+		}
 		CameraSupportHDMI struct {
 			Cflags          []string
 			Cppflags        []string
@@ -314,6 +322,7 @@ type productVariables struct {
 	CameraSupportHDMI            *bool    `json:",omitempty"`
 	CameraSupportVirtual         *bool    `json:",omitempty"`
 	CameraSupportOSD             *bool    `json:",omitempty"`
+	CameraSupportAutomotive      *bool    `json:",omitempty"`
 
 	Check_elf_files *bool `json:",omitempty"`
 
