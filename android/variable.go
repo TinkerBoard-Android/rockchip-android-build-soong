@@ -196,6 +196,14 @@ type variableProperties struct {
 			Host_required   []string
 			Target_required []string
 		}
+		CameraSupportOSD struct {
+			Cflags          []string
+			Cppflags        []string
+			Init_rc         []string
+			Required        []string
+			Host_required   []string
+			Target_required []string
+		}
 	} `android:"arch_variant"`
 }
 
@@ -305,6 +313,7 @@ type productVariables struct {
 	MinimizeJavaDebugInfo        *bool    `json:",omitempty"`
 	CameraSupportHDMI            *bool    `json:",omitempty"`
 	CameraSupportVirtual         *bool    `json:",omitempty"`
+	CameraSupportOSD             *bool    `json:",omitempty"`
 
 	Check_elf_files *bool `json:",omitempty"`
 
