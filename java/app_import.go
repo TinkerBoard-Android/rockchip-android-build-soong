@@ -112,6 +112,9 @@ type AndroidAppImportProperties struct {
 	// normal apps.
 	Privileged *bool
 
+	// Whether the prebuilt apk can be installed without additional processing. Default is false.
+        Preprocessed *bool
+
 	// Names of modules to be overridden. Listed modules can only be other binaries
 	// (in Make or Soong).
 	// This does not completely prevent installation of the overridden binaries, but if both
@@ -232,6 +235,9 @@ func (a *AndroidAppImport) shouldUncompressDex(ctx android.ModuleContext) bool {
 }
 
 func (a *AndroidAppImport) GenerateAndroidBuildActions(ctx android.ModuleContext) {
+
+	a.preprocessed = Bool(a.properties.Preprocessed)
+
 	a.generateAndroidBuildActions(ctx)
 }
 
@@ -296,7 +302,7 @@ func (a *AndroidAppImport) generateAndroidBuildActions(ctx android.ModuleContext
 	a.dexpreopter.enforceUsesLibs = a.usesLibrary.enforceUsesLibraries()
 	a.dexpreopter.classLoaderContexts = a.usesLibrary.classLoaderContextForUsesLibDeps(ctx)
 
-	if a.usesLibrary.enforceUsesLibraries() {
+	if a.usesLibrary.enforceUsesLibraries() && !a.preprocessed {
 		srcApk = a.usesLibrary.verifyUsesLibrariesAPK(ctx, srcApk)
 	}
 
